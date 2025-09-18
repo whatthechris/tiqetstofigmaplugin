@@ -1,0 +1,19 @@
+{
+  "name": "TiqetsToFigma",
+  "id": "1550214285704333043",
+  "api": "1.0.0",
+  "main": "code.js",
+  "capabilities": [],
+  "enableProposedApi": false,
+  "documentAccess": "dynamic-page",
+  "editorType": [
+    "figma"
+  ],
+  "ui": "ui.html",
+  "networkAccess": {
+    "allowedDomains": [
+      "*"
+    ],
+    "reasoning": "This plugin fetches JSON data from any API URL that the user provides, so it needs access to all domains to be flexible and useful."
+  }
+}

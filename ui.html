@@ -1,0 +1,1026 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <style>
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      margin: 0;
+      padding: 16px;
+      background: #ffffff;
+      color: #333;
+    }
+    
+    .container {
+      width: 100%;
+      max-width: none;
+    }
+    
+    h2 {
+      margin: 0 0 16px 0;
+      font-size: 16px;
+      font-weight: 600;
+      color: #1e1e1e;
+    }
+    
+    .input-group {
+      margin-bottom: 16px;
+    }
+    
+    label {
+      display: block;
+      margin-bottom: 8px;
+      font-size: 12px;
+      font-weight: 500;
+      color: #666;
+    }
+    
+    input[type="url"] {
+      width: 100%;
+      padding: 8px 12px;
+      border: 1px solid #e5e5e5;
+      border-radius: 6px;
+      font-size: 14px;
+      box-sizing: border-box;
+      transition: border-color 0.2s;
+    }
+    
+    input[type="url"]:focus {
+      outline: none;
+      border-color: #0c8ce9;
+      box-shadow: 0 0 0 2px rgba(12, 140, 233, 0.1);
+    }
+    
+    .button-group {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 16px;
+      width: 100%;
+    }
+    
+    button {
+      flex: 1;
+      padding: 8px 16px;
+      border: none;
+      border-radius: 6px;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background-color 0.2s;
+    }
+    
+    #fetch {
+      background: #0c8ce9;
+      color: white;
+    }
+    
+    #fetch:hover {
+      background: #0a7bc7;
+    }
+    
+    #fetch:disabled {
+      background: #ccc;
+      cursor: not-allowed;
+    }
+    
+    
+    
+    .json-display {
+      margin-top: 16px;
+      padding: 12px;
+      background: #f8f9fa;
+      border: 1px solid #e5e5e5;
+      border-radius: 6px;
+      font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+      font-size: 12px;
+      line-height: 1.4;
+      max-height: 300px;
+      overflow-y: auto;
+      white-space: pre-wrap;
+      word-break: break-word;
+      width: 100%;
+      box-sizing: border-box;
+    }
+    
+    .error {
+      color: #e74c3c;
+      background: #fdf2f2;
+      border-color: #f5c6cb;
+    }
+    
+    .loading {
+      color: #666;
+      font-style: italic;
+    }
+    
+    .hidden {
+      display: none;
+    }
+    
+    .help-text {
+      margin-top: 8px;
+      padding: 8px;
+      background: #f0f8ff;
+      border: 1px solid #b3d9ff;
+      border-radius: 4px;
+      font-size: 11px;
+      line-height: 1.4;
+      color: #0066cc;
+    }
+    
+    .help-text code {
+      background: #e6f3ff;
+      padding: 2px 4px;
+      border-radius: 2px;
+      font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+      font-size: 10px;
+    }
+    
+    .json-explorer {
+      margin-top: 16px;
+      padding: 12px;
+      background: #f8f9fa;
+      border: 1px solid #e5e5e5;
+      border-radius: 6px;
+      max-height: 300px;
+      overflow-y: auto;
+      width: 100%;
+      box-sizing: border-box;
+    }
+    
+    .json-explorer h3 {
+      margin: 0 0 12px 0;
+      font-size: 14px;
+      font-weight: 600;
+      color: #1e1e1e;
+    }
+    
+    .property-tree {
+      margin-bottom: 12px;
+    }
+    
+    .property-item {
+      display: flex;
+      align-items: center;
+      margin: 4px 0;
+      padding: 2px 0;
+    }
+    
+    .property-item input[type="checkbox"] {
+      margin-right: 8px;
+    }
+    
+    .expand-toggle {
+      width: 16px;
+      height: 16px;
+      margin-right: 4px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      color: #666;
+      user-select: none;
+    }
+    
+    .expand-toggle:hover {
+      color: #333;
+    }
+    
+    .expand-toggle.collapsed::before {
+      content: '▶';
+    }
+    
+    .expand-toggle.expanded::before {
+      content: '▼';
+    }
+    
+    .nested-children {
+      margin-left: 20px;
+      border-left: 2px solid #e5e5e5;
+      padding-left: 8px;
+    }
+    
+    .nested-children.collapsed {
+      display: none;
+    }
+    
+    .property-label {
+      font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+      font-size: 12px;
+      color: #333;
+      cursor: pointer;
+      flex: 1;
+    }
+    
+    .property-type {
+      font-size: 10px;
+      color: #666;
+      background: #e9ecef;
+      padding: 2px 6px;
+      border-radius: 3px;
+      margin-left: 8px;
+    }
+    
+    .property-type.object { background: #d4edda; color: #155724; }
+    .property-type.array { background: #d1ecf1; color: #0c5460; }
+    .property-type.string { background: #f8d7da; color: #721c24; }
+    .property-type.number { background: #fff3cd; color: #856404; }
+    .property-type.boolean { background: #e2e3e5; color: #383d41; }
+    .property-type.image { background: #e1d5e7; color: #6f42c1; }
+    
+    .nested {
+      margin-left: 20px;
+      border-left: 2px solid #e5e5e5;
+      padding-left: 8px;
+    }
+    
+    .selected-display {
+      margin-top: 16px;
+      padding: 12px;
+      background: #f0f8ff;
+      border: 1px solid #b3d9ff;
+      border-radius: 6px;
+      max-height: 300px;
+      overflow-y: auto;
+      width: 100%;
+      box-sizing: border-box;
+    }
+    
+    .selected-display h3 {
+      margin: 0 0 12px 0;
+      font-size: 14px;
+      font-weight: 600;
+      color: #1e1e1e;
+    }
+    
+    .selected-content {
+      font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+      font-size: 12px;
+      line-height: 1.4;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+    
+    .layer-mapping {
+      margin-top: 16px;
+      padding: 12px;
+      background: #fff3cd;
+      border: 1px solid #ffeaa7;
+      border-radius: 6px;
+      max-height: 300px;
+      overflow-y: auto;
+      width: 100%;
+      box-sizing: border-box;
+    }
+    
+    .layer-mapping h3 {
+      margin: 0 0 12px 0;
+      font-size: 14px;
+      font-weight: 600;
+      color: #1e1e1e;
+    }
+    
+    .mapping-container {
+      margin-bottom: 12px;
+      width: 100%;
+    }
+    
+    .mapping-item {
+      display: flex;
+      align-items: center;
+      margin: 8px 0;
+      padding: 8px;
+      background: white;
+      border: 1px solid #e5e5e5;
+      border-radius: 4px;
+      width: 100%;
+      box-sizing: border-box;
+    }
+    
+    .mapping-property {
+      flex: 1;
+      font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+      font-size: 11px;
+      color: #333;
+      margin-right: 12px;
+    }
+    
+    .mapping-arrow {
+      color: #666;
+      margin: 0 8px;
+      font-size: 12px;
+    }
+    
+    .mapping-input {
+      flex: 1;
+      padding: 4px 8px;
+      border: 1px solid #ddd;
+      border-radius: 3px;
+      font-size: 12px;
+    }
+    
+    .mapping-input:focus {
+      outline: none;
+      border-color: #0c8ce9;
+      box-shadow: 0 0 0 2px rgba(12, 140, 233, 0.1);
+    }
+    
+    #applyToFigma {
+      background: #28a745;
+      color: white;
+    }
+    
+    #applyToFigma:hover {
+      background: #218838;
+    }
+    
+    #applyToFigma:disabled {
+      background: #ccc;
+      cursor: not-allowed;
+    }
+    
+    #clearMapping {
+      background: #dc3545;
+      color: white;
+    }
+    
+    #clearMapping:hover {
+      background: #c82333;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>Tiqets to Figma – API JSON Fetcher</h2>
+    
+    <div class="input-group">
+      <label for="apiUrl">API URL:</label>
+      <input type="url" id="apiUrl" placeholder="https://www.tiqets.com/web_api" />
+    </div>
+    
+    <div class="button-group">
+      <button id="fetch">Fetch JSON</button>
+    </div>
+    
+    <div id="jsonDisplay" class="json-display hidden"></div>
+    
+    <div id="jsonExplorer" class="json-explorer hidden">
+      <h3>Select Properties</h3>
+      <div id="propertyTree" class="property-tree"></div>
+      <div class="button-group">
+        <button id="selectAll">Select All</button>
+        <button id="selectNone">Select None</button>
+        <button id="showSelected">Show Selected</button>
+      </div>
+    </div>
+    
+    <div id="selectedDisplay" class="selected-display hidden">
+      <h3>Selected Properties</h3>
+      <div id="selectedContent" class="selected-content"></div>
+    </div>
+    
+    <div id="layerMapping" class="layer-mapping hidden">
+      <h3>Map to Figma Layers</h3>
+      <div class="help-text">
+        Enter the names of Figma layers you want to target. Each selected property will be mapped to a layer.
+        <br><strong>Multiple Components:</strong> Select multiple components in Figma to apply different records to each component.
+      </div>
+      <div id="mappingContainer" class="mapping-container"></div>
+      <div class="button-group">
+        <button id="applyToFigma">Apply to Figma</button>
+        <button id="clearMapping">Clear Mapping</button>
+      </div>
+    </div>
+  </div>
+
+<script>
+    const apiUrlInput = document.getElementById('apiUrl');
+    const fetchButton = document.getElementById('fetch');
+    const jsonDisplay = document.getElementById('jsonDisplay');
+    const jsonExplorer = document.getElementById('jsonExplorer');
+    const propertyTree = document.getElementById('propertyTree');
+    const selectAllButton = document.getElementById('selectAll');
+    const selectNoneButton = document.getElementById('selectNone');
+    const showSelectedButton = document.getElementById('showSelected');
+    const selectedDisplay = document.getElementById('selectedDisplay');
+    const selectedContent = document.getElementById('selectedContent');
+    const layerMapping = document.getElementById('layerMapping');
+    const mappingContainer = document.getElementById('mappingContainer');
+    const applyToFigmaButton = document.getElementById('applyToFigma');
+    const clearMappingButton = document.getElementById('clearMapping');
+    
+    let currentJsonData = null;
+    let selectedProperties = new Set();
+    let propertyLayerMapping = new Map();
+
+    fetchButton.onclick = async () => {
+      const url = apiUrlInput.value.trim();
+      
+      if (!url) {
+        showError('Please enter a valid API URL');
+        return;
+      }
+      
+      try {
+        showLoading();
+        fetchButton.disabled = true;
+        
+        // Automatically apply CORS proxy
+        const proxiedUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`;
+        
+        const response = await fetch(proxiedUrl);
+        
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+        
+        const data = await response.json();
+        currentJsonData = data;
+        showJson(data);
+        showPropertyExplorer(data);
+        
+      } catch (error) {
+        let errorMessage = `Error fetching data: ${error.message}`;
+        
+        // Check for CORS errors specifically
+        if (error.message.includes('CORS') || error.message.includes('Access-Control-Allow-Origin') || 
+            error.message.includes('blocked by CORS policy') || error.message.includes('ERR_FAILED')) {
+          errorMessage = `CORS Error: The API doesn't allow browser requests even with proxy.\n\nTry a different API or check if the URL is correct.`;
+        }
+        
+        showError(errorMessage);
+      } finally {
+        fetchButton.disabled = false;
+      }
+    };
+
+
+    function showLoading() {
+      jsonDisplay.textContent = 'Loading...';
+      jsonDisplay.className = 'json-display loading';
+      jsonDisplay.classList.remove('hidden');
+    }
+
+    function showJson(data) {
+      // Hide the raw JSON display
+      jsonDisplay.classList.add('hidden');
+    }
+
+    function showError(message) {
+      jsonDisplay.textContent = message;
+      jsonDisplay.className = 'json-display error';
+      jsonDisplay.classList.remove('hidden');
+    }
+
+    // Allow Enter key to trigger fetch
+    apiUrlInput.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') {
+        fetchButton.click();
+      }
+    });
+
+    // Property explorer functions
+    function showPropertyExplorer(data) {
+      propertyTree.innerHTML = '';
+      selectedProperties.clear();
+      
+      // Extract records from data object
+      let records = [];
+      if (data && data.data && Array.isArray(data.data)) {
+        records = data.data;
+      } else if (Array.isArray(data)) {
+        records = data;
+      } else if (data && typeof data === 'object') {
+        // If it's a single object, treat it as one record
+        records = [data];
+      }
+      
+      if (records.length > 0) {
+        buildPropertyTreeFromAllRecords(records);
+      }
+      
+      jsonExplorer.classList.remove('hidden');
+    }
+
+    function buildPropertyTreeFromAllRecords(records) {
+      // Collect all unique properties from all records while maintaining structure
+      const allProperties = new Map(); // Use Map to store property info
+      
+      records.forEach(record => {
+        extractAllPropertiesWithStructure(record, '', allProperties);
+      });
+      
+      // Build the tree from the collected properties
+      buildTreeFromPropertyMap(allProperties, propertyTree, 0);
+    }
+
+    function extractAllPropertiesWithStructure(obj, path, allProperties) {
+      if (typeof obj !== 'object' || obj === null) {
+        return;
+      }
+
+      Object.keys(obj).forEach(key => {
+        const currentPath = path ? `${path}.${key}` : key;
+        const value = obj[key];
+        const type = getValueType(value);
+        
+        // Store property info
+        if (!allProperties.has(currentPath)) {
+          allProperties.set(currentPath, {
+            type: type,
+            isExpandable: type === 'object' || type === 'array',
+            isImage: isImageProperty(value),
+            children: new Map()
+          });
+        }
+        
+        // Recursively extract nested properties
+        if (type === 'object' || type === 'array') {
+          extractAllPropertiesWithStructure(value, currentPath, allProperties.get(currentPath).children);
+        }
+      });
+    }
+
+    function buildTreeFromPropertyMap(propertyMap, container, depth) {
+      // Sort properties for consistent display
+      const sortedEntries = Array.from(propertyMap.entries()).sort(([a], [b]) => a.localeCompare(b));
+      
+      sortedEntries.forEach(([propertyPath, propertyInfo]) => {
+        const isExpandable = propertyInfo.isExpandable;
+        
+        // Create main property item
+        const item = document.createElement('div');
+        item.className = 'property-item';
+        if (depth > 0) {
+          item.classList.add('nested');
+        }
+        
+        // Create expand toggle for objects and arrays
+        let expandToggle = null;
+        if (isExpandable) {
+          expandToggle = document.createElement('div');
+          expandToggle.className = 'expand-toggle collapsed';
+          expandToggle.addEventListener('click', (e) => {
+            e.stopPropagation();
+            toggleExpand(expandToggle, childrenContainer);
+          });
+        } else {
+          // Add spacer for non-expandable items
+          expandToggle = document.createElement('div');
+          expandToggle.style.width = '16px';
+          expandToggle.style.marginRight = '4px';
+        }
+        
+        const checkbox = document.createElement('input');
+        checkbox.type = 'checkbox';
+        checkbox.id = `prop-${propertyPath.replace(/[^a-zA-Z0-9]/g, '_')}`;
+        checkbox.addEventListener('change', (e) => {
+          if (e.target.checked) {
+            selectedProperties.add(propertyPath);
+          } else {
+            selectedProperties.delete(propertyPath);
+          }
+        });
+        
+        const label = document.createElement('label');
+        label.className = 'property-label';
+        label.htmlFor = checkbox.id;
+        label.textContent = propertyPath.split('.').pop(); // Show only the last part of the path
+        
+        const typeSpan = document.createElement('span');
+        typeSpan.className = `property-type ${propertyInfo.type}`;
+        typeSpan.textContent = propertyInfo.isImage ? 'image' : propertyInfo.type;
+        
+        item.appendChild(expandToggle);
+        item.appendChild(checkbox);
+        item.appendChild(label);
+        item.appendChild(typeSpan);
+        container.appendChild(item);
+        
+        // Create children container for nested items
+        let childrenContainer = null;
+        if (isExpandable && propertyInfo.children.size > 0) {
+          childrenContainer = document.createElement('div');
+          childrenContainer.className = 'nested-children collapsed';
+          container.appendChild(childrenContainer);
+          
+          // Recursively build tree for nested properties
+          buildTreeFromPropertyMap(propertyInfo.children, childrenContainer, depth + 1);
+        }
+      });
+    }
+
+    function buildPropertyTree(obj, path, depth, parentContainer) {
+      if (typeof obj !== 'object' || obj === null) {
+        return;
+      }
+
+      const container = parentContainer || propertyTree;
+
+      // Handle arrays of objects (records)
+      if (Array.isArray(obj) && obj.length > 0 && typeof obj[0] === 'object') {
+        // Show properties from the first record as a template
+        const firstRecord = obj[0];
+        const arrayPath = path;
+        
+        // Create main array item
+        const arrayItem = document.createElement('div');
+        arrayItem.className = 'property-item';
+        if (depth > 0) {
+          arrayItem.classList.add('nested');
+        }
+        
+        // Create expand toggle
+        const expandToggle = document.createElement('div');
+        expandToggle.className = 'expand-toggle collapsed';
+        expandToggle.addEventListener('click', (e) => {
+          e.stopPropagation();
+          toggleExpand(expandToggle, childrenContainer);
+        });
+        
+        const checkbox = document.createElement('input');
+        checkbox.type = 'checkbox';
+        checkbox.id = `prop-${arrayPath.replace(/[^a-zA-Z0-9]/g, '_')}`;
+        checkbox.addEventListener('change', (e) => {
+          if (e.target.checked) {
+            selectedProperties.add(arrayPath);
+          } else {
+            selectedProperties.delete(arrayPath);
+          }
+        });
+        
+        const label = document.createElement('label');
+        label.className = 'property-label';
+        label.htmlFor = checkbox.id;
+        label.textContent = `${path.split('.').pop()} (${obj.length} records)`;
+        
+        const typeSpan = document.createElement('span');
+        typeSpan.className = 'property-type array';
+        typeSpan.textContent = 'array';
+        
+        arrayItem.appendChild(expandToggle);
+        arrayItem.appendChild(checkbox);
+        arrayItem.appendChild(label);
+        arrayItem.appendChild(typeSpan);
+        container.appendChild(arrayItem);
+        
+        // Create children container for array items
+        const childrenContainer = document.createElement('div');
+        childrenContainer.className = 'nested-children collapsed';
+        container.appendChild(childrenContainer);
+        
+        // Build tree for the first record as a template
+        buildPropertyTree(firstRecord, `${arrayPath}[0]`, depth + 1, childrenContainer);
+        
+        return;
+      }
+
+      // Handle regular objects
+      Object.keys(obj).forEach(key => {
+        const currentPath = path ? `${path}.${key}` : key;
+        const value = obj[key];
+        const type = getValueType(value);
+        const isExpandable = type === 'object' || type === 'array';
+        
+        // Create main property item
+        const item = document.createElement('div');
+        item.className = 'property-item';
+        if (depth > 0) {
+          item.classList.add('nested');
+        }
+        
+        // Create expand toggle for objects and arrays
+        let expandToggle = null;
+        if (isExpandable) {
+          expandToggle = document.createElement('div');
+          expandToggle.className = 'expand-toggle collapsed';
+          expandToggle.addEventListener('click', (e) => {
+            e.stopPropagation();
+            toggleExpand(expandToggle, childrenContainer);
+          });
+        } else {
+          // Add spacer for non-expandable items
+          expandToggle = document.createElement('div');
+          expandToggle.style.width = '16px';
+          expandToggle.style.marginRight = '4px';
+        }
+        
+        const checkbox = document.createElement('input');
+        checkbox.type = 'checkbox';
+        checkbox.id = `prop-${currentPath.replace(/[^a-zA-Z0-9]/g, '_')}`;
+        checkbox.addEventListener('change', (e) => {
+          if (e.target.checked) {
+            selectedProperties.add(currentPath);
+          } else {
+            selectedProperties.delete(currentPath);
+          }
+        });
+        
+        const label = document.createElement('label');
+        label.className = 'property-label';
+        label.htmlFor = checkbox.id;
+        label.textContent = key;
+        
+        const typeSpan = document.createElement('span');
+        typeSpan.className = `property-type ${type}`;
+        typeSpan.textContent = type;
+        
+        item.appendChild(expandToggle);
+        item.appendChild(checkbox);
+        item.appendChild(label);
+        item.appendChild(typeSpan);
+        container.appendChild(item);
+        
+        // Create children container for nested items
+        let childrenContainer = null;
+        if (isExpandable) {
+          childrenContainer = document.createElement('div');
+          childrenContainer.className = 'nested-children collapsed';
+          container.appendChild(childrenContainer);
+          
+          // Recursively build tree for nested objects and arrays
+          buildPropertyTree(value, currentPath, depth + 1, childrenContainer);
+        }
+      });
+    }
+
+    function toggleExpand(toggle, childrenContainer) {
+      if (toggle.classList.contains('collapsed')) {
+        toggle.classList.remove('collapsed');
+        toggle.classList.add('expanded');
+        childrenContainer.classList.remove('collapsed');
+      } else {
+        toggle.classList.remove('expanded');
+        toggle.classList.add('collapsed');
+        childrenContainer.classList.add('collapsed');
+      }
+    }
+
+    function getValueType(value) {
+      if (value === null) return 'null';
+      if (Array.isArray(value)) return 'array';
+      if (typeof value === 'object') return 'object';
+      return typeof value;
+    }
+
+    function isImageProperty(value) {
+      if (typeof value === 'string') {
+        // Check if it's a URL that looks like an image
+        return /\.(jpg|jpeg|png|gif|webp|svg)(\?.*)?$/i.test(value) || 
+               value.includes('image') || 
+               value.includes('photo') ||
+               value.includes('picture');
+      }
+      if (Array.isArray(value)) {
+        // Check if array contains image URLs
+        return value.some(item => typeof item === 'string' && isImageProperty(item));
+      }
+      if (typeof value === 'object' && value !== null) {
+        // Check if object has image-related properties
+        return Object.values(value).some(item => isImageProperty(item));
+      }
+      return false;
+    }
+
+    function getNestedValue(obj, path) {
+      return path.split('.').reduce((current, key) => {
+        return current && current[key] !== undefined ? current[key] : undefined;
+      }, obj);
+    }
+
+    // Button event handlers
+    selectAllButton.onclick = () => {
+      const checkboxes = propertyTree.querySelectorAll('input[type="checkbox"]');
+      checkboxes.forEach(checkbox => {
+        checkbox.checked = true;
+        const path = checkbox.id.replace('prop-', '').replace(/_/g, '.');
+        selectedProperties.add(path);
+      });
+    };
+
+    selectNoneButton.onclick = () => {
+      const checkboxes = propertyTree.querySelectorAll('input[type="checkbox"]');
+      checkboxes.forEach(checkbox => {
+        checkbox.checked = false;
+      });
+      selectedProperties.clear();
+    };
+
+    showSelectedButton.onclick = () => {
+      if (selectedProperties.size === 0) {
+        showError('No properties selected');
+        return;
+      }
+      
+      console.log('Selected properties:', Array.from(selectedProperties));
+      
+      // Extract records from current data
+      let records = [];
+      if (currentJsonData && currentJsonData.data && Array.isArray(currentJsonData.data)) {
+        records = currentJsonData.data;
+      } else if (Array.isArray(currentJsonData)) {
+        records = currentJsonData;
+      } else if (currentJsonData && typeof currentJsonData === 'object') {
+        records = [currentJsonData];
+      }
+      
+      if (records.length === 0) {
+        showError('No records found in data');
+        return;
+      }
+      
+      console.log('Records found:', records.length);
+      console.log('First record:', records[0]);
+      
+      // Apply selected properties to all records
+      const selectedRecords = records.map(record => {
+        const selectedRecord = {};
+        selectedProperties.forEach(path => {
+          // Remove the array index part from the path (e.g., "records[0].property" -> "property")
+          const cleanPath = path.replace(/^records\[\d+\]\.?/, '');
+          if (cleanPath) {
+            const value = getNestedValue(record, cleanPath);
+            if (value !== undefined) {
+              // Create nested object structure
+              const keys = cleanPath.split('.');
+              let current = selectedRecord;
+              for (let i = 0; i < keys.length - 1; i++) {
+                if (!current[keys[i]]) {
+                  current[keys[i]] = {};
+                }
+                current = current[keys[i]];
+              }
+              current[keys[keys.length - 1]] = value;
+            }
+          }
+        });
+        return selectedRecord;
+      });
+      
+      console.log('Selected records result:', selectedRecords);
+      selectedContent.textContent = JSON.stringify(selectedRecords, null, 2);
+      selectedDisplay.classList.remove('hidden');
+      
+      // Show layer mapping interface
+      showLayerMapping();
+    };
+
+    // Layer mapping functions
+    function showLayerMapping() {
+      mappingContainer.innerHTML = '';
+      propertyLayerMapping.clear();
+      
+      // Create mapping inputs for each selected property
+      selectedProperties.forEach(property => {
+        const cleanPath = property.replace(/^records\[\d+\]\.?/, '');
+        if (cleanPath) {
+          const mappingItem = document.createElement('div');
+          mappingItem.className = 'mapping-item';
+          
+          const propertyLabel = document.createElement('div');
+          propertyLabel.className = 'mapping-property';
+          propertyLabel.textContent = cleanPath;
+          
+          const arrow = document.createElement('div');
+          arrow.className = 'mapping-arrow';
+          arrow.textContent = '→';
+          
+          const layerInput = document.createElement('input');
+          layerInput.type = 'text';
+          layerInput.className = 'mapping-input';
+          layerInput.placeholder = 'Layer name';
+          
+          // Set default value to the property name (last part of the path)
+          const defaultLayerName = cleanPath.split('.').pop() || cleanPath;
+          layerInput.value = defaultLayerName;
+          propertyLayerMapping.set(cleanPath, defaultLayerName);
+          
+          layerInput.addEventListener('input', (e) => {
+            if (e.target.value.trim()) {
+              propertyLayerMapping.set(cleanPath, e.target.value.trim());
+            } else {
+              propertyLayerMapping.delete(cleanPath);
+            }
+            updateApplyButton();
+          });
+          
+          mappingItem.appendChild(propertyLabel);
+          mappingItem.appendChild(arrow);
+          mappingItem.appendChild(layerInput);
+          mappingContainer.appendChild(mappingItem);
+        }
+      });
+      
+      layerMapping.classList.remove('hidden');
+      updateApplyButton();
+    }
+
+    function updateApplyButton() {
+      const hasMappings = propertyLayerMapping.size > 0;
+      applyToFigmaButton.disabled = !hasMappings;
+    }
+
+    // Button event handlers for layer mapping
+    applyToFigmaButton.onclick = () => {
+      if (propertyLayerMapping.size === 0) {
+        showError('No layer mappings defined');
+        return;
+      }
+      
+      // Prepare the mapping data to send to the plugin
+      const mappingData = {
+        type: 'apply-to-figma',
+        mappings: Object.fromEntries(propertyLayerMapping),
+        selectedData: getSelectedDataForFigma(),
+        imageProperties: getImageProperties()
+      };
+      
+      console.log('Sending to Figma:', mappingData);
+      console.log('Image properties detected:', mappingData.imageProperties);
+      parent.postMessage({ pluginMessage: mappingData }, '*');
+    };
+
+    clearMappingButton.onclick = () => {
+      propertyLayerMapping.clear();
+      mappingContainer.innerHTML = '';
+      layerMapping.classList.add('hidden');
+      updateApplyButton();
+    };
+
+    function getSelectedDataForFigma() {
+      // Extract records from current data
+      let records = [];
+      if (currentJsonData && currentJsonData.data && Array.isArray(currentJsonData.data)) {
+        records = currentJsonData.data;
+      } else if (Array.isArray(currentJsonData)) {
+        records = currentJsonData;
+      } else if (currentJsonData && typeof currentJsonData === 'object') {
+        records = [currentJsonData];
+      }
+      
+      if (records.length === 0) {
+        return [];
+      }
+      
+      // Apply selected properties to all records
+      return records.map(record => {
+        const selectedRecord = {};
+        selectedProperties.forEach(path => {
+          const cleanPath = path.replace(/^records\[\d+\]\.?/, '');
+          if (cleanPath) {
+            const value = getNestedValue(record, cleanPath);
+            const keys = cleanPath.split('.');
+            let current = selectedRecord;
+            
+            // Create nested structure
+            for (let i = 0; i < keys.length - 1; i++) {
+              if (!current[keys[i]]) {
+                current[keys[i]] = {};
+              }
+              current = current[keys[i]];
+            }
+            
+            // Set value (use "---" if property doesn't exist in this record)
+            current[keys[keys.length - 1]] = value !== undefined ? value : "---";
+          }
+        });
+        return selectedRecord;
+      });
+    }
+
+    function getImageProperties() {
+      const imageProps = new Set();
+      selectedProperties.forEach(property => {
+        const cleanPath = property.replace(/^records\[\d+\]\.?/, '');
+        if (cleanPath) {
+          // Check if this property contains image data
+          const records = [];
+          if (currentJsonData && currentJsonData.data && Array.isArray(currentJsonData.data)) {
+            records.push(...currentJsonData.data);
+          } else if (Array.isArray(currentJsonData)) {
+            records.push(...currentJsonData);
+          } else if (currentJsonData && typeof currentJsonData === 'object') {
+            records.push(currentJsonData);
+          }
+          
+          // Check if any record has image data for this property
+          const hasImageData = records.some(record => {
+            const value = getNestedValue(record, cleanPath);
+            const isImage = isImageProperty(value);
+            if (isImage) {
+              console.log(`Found image property: ${cleanPath} with value:`, value);
+            }
+            return isImage;
+          });
+          
+          if (hasImageData) {
+            imageProps.add(cleanPath);
+          }
+        }
+      });
+      console.log('Image properties found:', Array.from(imageProps));
+      return Array.from(imageProps);
+    }
+</script>
+</body>
+</html>
